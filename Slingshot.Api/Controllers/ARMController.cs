@@ -75,7 +75,7 @@ namespace Slingshot.Controllers
         public async Task<HttpResponseMessage> Get()
         {
             IHttpRouteData routeData = Request.GetRouteData();
-          
+
             string path = routeData.Values["path"] as string + Request.RequestUri.Query;
             if (String.IsNullOrEmpty(path))
             {
@@ -89,10 +89,54 @@ namespace Slingshot.Controllers
                 return await GetTenants(path);
             }
 
+            if (path.IndexOf("graph.windows.net") >-1)
+            {
+                using (var client = GetClient(Utils.GetAADUrl(Request.RequestUri.Host)))
+                {
+
+                    return await Utils.Execute(client.GetAsync(path.Substring(17)));
+                }
+            }
             using (var client = GetClient(Utils.GetCSMUrl(Request.RequestUri.Host)))
             {
-               
+
                 return await Utils.Execute(client.GetAsync(path));
+            }
+        }
+
+
+        [Authorize]
+        [HttpPost]
+        public async Task<HttpResponseMessage> Post()
+        {
+            IHttpRouteData routeData = Request.GetRouteData();
+            HttpContent content = Request.Content;
+
+            string path = routeData.Values["path"] as string + Request.RequestUri.Query;
+            if (String.IsNullOrEmpty(path))
+            {
+                var response = Request.CreateResponse(HttpStatusCode.Redirect);
+                response.Headers.Location = new Uri(Path.Combine(Request.RequestUri.AbsoluteUri, "subscriptions"));
+                return response;
+            }
+
+            if (path.StartsWith("tenants", StringComparison.OrdinalIgnoreCase))
+            {
+                return await GetTenants(path);
+            }
+
+            if (path.IndexOf("graph.windows.net") > -1)
+            {
+                using (var client = GetClient(Utils.GetAADUrl(Request.RequestUri.Host)))
+                {
+
+                    return await Utils.Execute(client.PostAsync(path.Substring(17), content));
+                }
+            }
+            using (var client = GetClient(Utils.GetCSMUrl(Request.RequestUri.Host)))
+            {
+
+                return await Utils.Execute(client.PostAsync(path, content));
             }
         }
 
@@ -719,7 +763,16 @@ namespace Slingshot.Controllers
                 client.BaseAddress = new Uri(baseUri);
             }
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Headers.GetValues("X-MS-OAUTH-TOKEN").FirstOrDefault());
+            if (baseUri.IndexOf("graph.windows.net") > -1)
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Headers.GetValues("X-MS-OAUTH-TOKEN2").FirstOrDefault());
+
+            }
+            else
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Headers.GetValues("X-MS-OAUTH-TOKEN").FirstOrDefault());
+            }
+          
             return client;
         }
 

@@ -4,8 +4,11 @@
 
 var appControllers = angular.module('ms.site.controllers', ['ms.site.controllers.modal', 'ui.grid', 'ui.bootstrap']);
 
+appControllers.controller('rbacCtrl', ['$scope', '$modal', 'RestService','$location','$filter', function ($scope, $modal, RestService, $location,$filter) {
+    Initialize($scope, $modal, RestService, $location, $filter)
 
-appControllers.controller('PolicyCtrl', ['$scope', '$modal', 'RestService','$location','$filter', function ($scope, $modal, RestService, $location,$filter) {
+
+}]).controller('PolicyCtrl', ['$scope', '$modal', 'RestService','$location','$filter', function ($scope, $modal, RestService, $location,$filter) {
     Initialize($scope, $modal, RestService, $location, $filter)
 
     $scope.viewJson = function (p) {
@@ -179,21 +182,34 @@ function parseJwt(token) {
     return JSON.parse(window.atob(base64));
 };
 function Initialize($scope, $modal, RestService, $location, $filter) {
+    RestService.getclient('aad-membership').query({}, {
+        "securityEnabledOnly": false
+    }, function (items) {
+        $scope.memberships = items.value
+    })
     RestService.getclient('subscription').query(function (items) {
         $scope.subs = items.value
         RestService.getclient('userinfo').query(function (user) {
-            appInsights.setAuthenticatedUserContext(user.upn)
+            //appInsights.setAuthenticatedUserContext(user.upn)
         })
       
         $scope.policies = []
         $scope.assignmentnumbers = []
+        $scope.roledefinitions = []
+        $scope.roleassignments = []
+        $scope.memberships = []
         $scope.violationnumbers = []
         $scope.events = []
         $scope.loadingpolicy = true
         $scope.loadinglogs = true
         $scope.loadingassignments = true
+        $scope.loadingrback = true
+        items.value.forEach(function (item) {
+          
+        })
         $scope.subs.forEach(function (sub) {
             $scope.policies[sub.subscriptionId] = []
+            $scope.roleassignments[sub.subscriptionId] = []
             RestService.getclient('pd').query({ id: sub.subscriptionId }, function (items) {
                 $scope.loadingpolicy = false
                 items.value.forEach(function (item) {
@@ -232,6 +248,12 @@ function Initialize($scope, $modal, RestService, $location, $filter) {
                     })
                 })
                 */
+            })
+            RestService.getclient('ra').query({ id: sub.subscriptionId }, function (items) {
+                $scope.loadingrback = false
+              
+                $scope.roleassignments[sub.subscriptionId] = items.value
+          
             })
         })
     })

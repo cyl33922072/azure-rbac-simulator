@@ -99,6 +99,10 @@ namespace Slingshot.Helpers
 
             return "https://management.azure.com";
         }
+        public static string GetAADUrl(string host)
+        {
+            return "https://graph.windows.net";
+        }
 
         public static string GetRDFEUrl(string host)
         {

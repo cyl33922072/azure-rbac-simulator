@@ -22,6 +22,7 @@ namespace Slingshot
             config.Routes.MapHttpRoute("post-deployments-notification", "api/deploymentsnotification", new { controller = "ARM", action = "DeploymentNotification" }, new { verb = new HttpMethodConstraint("POST") });
 */
             config.Routes.MapHttpRoute("get", "api/{*path}", new { controller = "ARM", action = "Get" }, new { verb = new HttpMethodConstraint("GET", "HEAD") });
+            config.Routes.MapHttpRoute("post", "api/{*path}", new { controller = "ARM", action = "Post" }, new { verb = new HttpMethodConstraint("Post") });
             config.Routes.MapHttpRoute("put", "api/{*path}", new { controller = "ARM", action = "Put" }, new { verb = new HttpMethodConstraint("Put") });
             config.Routes.MapHttpRoute("delete", "api/{*path}", new { controller = "ARM", action = "Delete" }, new { verb = new HttpMethodConstraint("Delete") });
 
