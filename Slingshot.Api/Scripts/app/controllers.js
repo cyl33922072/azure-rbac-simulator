@@ -6,7 +6,105 @@ var appControllers = angular.module('ms.site.controllers', ['ms.site.controllers
 
 appControllers.controller('rbacCtrl', ['$scope', '$modal', 'RestService','$location','$filter', function ($scope, $modal, RestService, $location,$filter) {
     Initialize($scope, $modal, RestService, $location, $filter)
+    $scope.GetRoleById = function (subscriptionId, roleDefinitionId) {
+        var rds = $scope.roledefinitions[subscriptionId] 
+        //alert(JSON.stringify(jsonPath(rds, "$.[?(@.id=='" + roleDefinitionId + "')]")[0]))
+        return jsonPath(rds, "$[?(@.id=='"+roleDefinitionId+"')]")[0]
 
+    }
+    $scope.ops = []
+    $scope.rps= []
+    $scope.resourceTypes = []
+    $scope.operations = []
+    RestService.getclient('ops').query(function (ops) {
+        $scope.ops = ops.value
+      
+    })
+    $scope.RemoveAssignment = function (subscriptionId, index) {
+        $scope.roleassignments[subscriptionId].splice(index,1)
+
+    }
+    $scope.AddRole = function (subscriptionId, roletoadd, scopetoadd) {
+        var assignment = {}
+        assignment.properties = {}
+        assignment.properties.roleDefinitionId = roletoadd
+        if (scopetoadd == null) {
+            scopetoadd = "/subscriptions/" + subscriptionId
+        }
+        assignment.properties.scope = scopetoadd
+        $scope.roleassignments[subscriptionId].push(assignment)
+    }
+    $scope.GetResourceTypes = function (rp) {
+        if (rp == null) return []
+        var resourceTypes = jsonPath($scope.ops, "$[?(@.name=='" + rp + "')].resourceTypes")[0]
+       return resourceTypes
+    }
+    $scope.GetOperations = function (rp, resourcetype) {
+        if(rp==null || resourcetype == null) return []
+        var operations = jsonPath($scope.GetResourceTypes(rp), "$[?(@.name=='" + resourcetype + "')].operations")[0]
+        return operations
+    }
+    $scope.IsPermittedwithDetails = function (subId, roleassignments, operationName) {
+        operationName = operationName.toLowerCase()
+        if(subId == null || roleassignments == null || operationName == null) return false
+        var matchassignment = false
+        roleassignments.forEach(function (ra) {
+            var permissions = $scope.GetRoleById(subId, ra.properties.roleDefinitionId).properties.permissions
+            var matchpermission = false
+            permissions.forEach(function (p) {
+                var actions = p.actions
+                var notactions = p.notActions
+                var matchaction = false
+                var matchnotaction = false
+                actions.forEach(function (action) {
+                    var action = action.replace("*", ".*").toLowerCase()
+                    var patt = new RegExp(action);
+                    var result = patt.test(operationName)
+                    if (result == true)
+                         matchaction = true
+                     
+                })
+                if (notactions) {
+                    notactions.forEach(function (action) {
+                        var action = action.replace("*", ".*").toLowerCase()
+                        var patt = new RegExp(action);
+                        var result = patt.test(operationName)
+                        if (result == true)
+                            matchnotaction = true
+                        
+                    })
+                }
+           
+                if (matchaction && !matchnotaction) {
+                    matchpermission = true
+                    
+                }
+            })
+            if (matchpermission) {
+                matchassignment = true
+                
+            }
+        })
+        return matchassignment
+    }
+    $scope.ViewPermissions = function (subscriptionId, roleDefinitionId) {
+        var rds = $scope.roledefinitions[subscriptionId]
+        var permissions = jsonPath(rds, "$.[?(@.id=='" + roleDefinitionId + "')].properties.permissions")[0]
+        var modalInstance = $modal.open({
+            templateUrl: "/pages/permissions.html",
+            size: 'lg',
+            controller: "PolicyDefinitionModal",
+            resolve: {
+                detail: function () {
+                    return permissions;
+                }
+            }
+        });
+        modalInstance.result.then(function () {
+
+        })
+
+    }
 
 }]).controller('PolicyCtrl', ['$scope', '$modal', 'RestService','$location','$filter', function ($scope, $modal, RestService, $location,$filter) {
     Initialize($scope, $modal, RestService, $location, $filter)
@@ -182,15 +280,13 @@ function parseJwt(token) {
     return JSON.parse(window.atob(base64));
 };
 function Initialize($scope, $modal, RestService, $location, $filter) {
-    RestService.getclient('aad-membership').query({}, {
-        "securityEnabledOnly": false
-    }, function (items) {
-        $scope.memberships = items.value
-    })
+
     RestService.getclient('subscription').query(function (items) {
         $scope.subs = items.value
         RestService.getclient('userinfo').query(function (user) {
             //appInsights.setAuthenticatedUserContext(user.upn)
+          //  $scope.user = user.objectId
+           // alert(JSON.stringify(user))
         })
       
         $scope.policies = []
@@ -233,28 +329,32 @@ function Initialize($scope, $modal, RestService, $location, $filter) {
                     })
 
                 })
-                var today = new Date()
-                var span = new Date(new Date().setDate(today.getDate() - 10))
-                /*
-                RestService.getclient('events').query({ id: sub.subscriptionId, filter: "eventTimestamp ge '" + span.toJSON() + "' and eventTimestamp le '" + today.toJSON() + "'" }, function (events) {
-                    $scope.loadinglogs = false
-                    events.value.forEach(function (event) {
-                        if (event.subStatus.value == "Forbidden") {
-                            var pattern = /\/subscriptions(\w|\d|\/|-|\.)+/i
-                            var policy = event.properties.statusMessage.match(pattern)[0]
-                            $scope.violationnumbers[policy]++
-                            $scope.events[policy].push(event)
-                        }
+                RestService.getclient('userinfo').query(function (user) {
+                    //appInsights.setAuthenticatedUserContext(user.upn)
+                    var principalId = user.oid
+                  
+
+                    RestService.getclient('rd').query({ id: sub.subscriptionId }, function (items) {
+                        $scope.loadingrback = false
+                        $scope.roledefinitions[sub.subscriptionId] = items.value
+
+                        RestService.getclient('ra').query({ id: sub.subscriptionId, principalId: principalId }, function (items) {
+                            $scope.loadingrback = false
+                            $scope.roleassignments[sub.subscriptionId] = items.value
+
+
+                        })
+                    }) 
+
+                    RestService.getclient('rg').query({ id: sub.subscriptionId },function(items) {
+                        $scope.resourcegroups = items.value
                     })
+                    // alert(JSON.stringify(user))
                 })
-                */
-            })
-            RestService.getclient('ra').query({ id: sub.subscriptionId }, function (items) {
-                $scope.loadingrback = false
-              
-                $scope.roleassignments[sub.subscriptionId] = items.value
           
+      
             })
+         
         })
     })
 }

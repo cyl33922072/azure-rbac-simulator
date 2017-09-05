@@ -16,7 +16,6 @@ namespace Slingshot.Modules
     public class ARMOAuthModule : IHttpModule
     {
         public const string ManagementResource = "https://management.core.windows.net/";
-        public const string AADResource = "https://graph.windows.net/";
         public const string TenantIdClaimType = "http://schemas.microsoft.com/identity/claims/tenantid";
         public const string NonceClaimType = "nonce";
         public const string OAuthTokenCookie = "OAuthToken";
@@ -98,22 +97,17 @@ namespace Slingshot.Modules
             }
             else
             {
-                var token2 = ReadOAuthTokenCookie(application);
-               
-                if (token2 != null)
+                var token = ReadOAuthTokenCookie(application);
+                if (token != null)
                 {
-                    if (!token2.IsValid())
+                    if (!token.IsValid())
                     {
-                      
+                        token = AADOAuth2AccessToken.GetAccessTokenByRefreshToken(token.TenantId, token.refresh_token, ManagementResource);
+                        WriteOAuthTokenCookie(application, token);
                     }
-
-                    token2 = AADOAuth2AccessToken.GetAccessTokenByRefreshToken(token2.TenantId, token2.refresh_token, AADResource);
-
-                    WriteOAuthTokenCookie(application, token2);
-                    var token = AADOAuth2AccessToken.GetAccessTokenByRefreshToken(token2.TenantId, token2.refresh_token, ManagementResource);
+                    
                     principal = new ClaimsPrincipal(new ClaimsIdentity("AAD"));
                     request.ServerVariables["HTTP_X_MS_OAUTH_TOKEN"] = token.access_token;
-                    request.ServerVariables["HTTP_X_MS_OAUTH_TOKEN2"] = token2.access_token;
                 }
             }
 
@@ -148,13 +142,13 @@ namespace Slingshot.Modules
             strb.AppendFormat("?response_type={0}", WebUtility.UrlEncode(response_type));
             strb.AppendFormat("&redirect_uri={0}", WebUtility.UrlEncode(redirect_uri));
             strb.AppendFormat("&client_id={0}", WebUtility.UrlEncode(client_id));
-            strb.AppendFormat("&resource={0}", WebUtility.UrlEncode(AADResource));
+            strb.AppendFormat("&resource={0}", WebUtility.UrlEncode(ManagementResource));
             strb.AppendFormat("&scope={0}", WebUtility.UrlEncode(scope));
             strb.AppendFormat("&nonce={0}", WebUtility.UrlEncode(nonce));
             strb.AppendFormat("&site_id={0}", WebUtility.UrlEncode(site_id));
             strb.AppendFormat("&response_mode={0}", WebUtility.UrlEncode(response_mode));
             //strb.AppendFormat("&state={0}", WebUtility.UrlEncode(state ?? request.Url.PathAndQuery));
-            strb.AppendFormat("&state={0}&prompt=consent", WebUtility.UrlEncode(state ?? request.Url.Query));
+            strb.AppendFormat("&state={0}", WebUtility.UrlEncode(state ?? request.Url.Query));
 
             return strb.ToString();
         }

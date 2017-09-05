@@ -1,68 +1,135 @@
-﻿<div class="col-sm-9 col-sm-offset-3 col-md-40 col-md-offset-2 main">
+﻿<div class="col-sm-12 col-sm-offset-0 col-md-40 col-md-offset-0 main">
 
-    <p ng-show="loadingrbac" class="bg-info">Loading Role Assignments ....</p>
-
-
+    <p ng-show="loadingrbac" class="bg-info">Loading ....</p>
     <div class="col-sm-offset-10">
-        <button type="button" class="btn btn-primary btn-sm" ng-click="addPolicy(p)">Add Policy</button>
-        <button type="button" class="btn btn-success btn-sm" ng-click="gallery()">Policy Gallery</button>
+        <button type="button" class="btn btn-primary btn-sm" ng-click="addPolicy(p)">Add Custom Role</button>
     </div>
-    <br />
-    <div class="table-responsive" ng-repeat="s in subs">
-        <h4>{{s.displayName}} - {{s.subscriptionId}}</h4>
-        <p ng-show="roleassignments[s.subscriptionId].length == 0" class="bg-info"> You have no policy under this subscription</p>
-        <div class="table-responsive">
-            <table ng-show="roleassignments[s.subscriptionId].length>0" class="table table-striped">
+
+    <div class="col-sm-4">
+
+        <h2>
+            Get Role Assignments
+        </h2>
+
+        <div class="form-group  has-feedback">
+
+            <span class="nullable col-sm-12">
+                <select class="form-control col-sm-12" ng-model="selectedsubId" ng-options="sub.subscriptionId as sub.displayName for sub in subs" required="">
+                    <option value="">--Please Select a Subscription--</option>
+                </select>
+            </span>
+        </div>
+
+        <br />
+
+        <div ng-show="roleassignments[selectedsubId].length>0" class="table-responsive col-sm-12">
+            <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>
                             Name
                         </th>
                         <th>
-                            Type
-                        </th>
-                        <th>
-                            Description
-                        </th>
-                        <th>
-                            Number of Assignments
-                        </th>
-                        <th>
-                            Number of Violations
+                            Scope
                         </th>
                         <th>
                             Action
                         </th>
+
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="p in roleassignments[s.subscriptionId]">
-
+                    <tr ng-repeat="p in roleassignments[selectedsubId]">
                         <td>
-                            {{p.name}}
+                            {{GetRoleById(selectedsubId,p.properties.roleDefinitionId).properties.roleName}}
+                        </td>
+                        <td>
+                            {{p.properties.scope | scopetolevel}}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-sm" ng-click="ViewPermissions(selectedsubId,p.properties.roleDefinitionId)">Permissions</button>
+                            <button type="button" class="btn btn-primary btn-sm" ng-click="RemoveAssignment(selectedsubId,$index)">Remove</button>
                         </td>
 
-                        <td>
-                            {{p.properties.policyType}}
-                        </td>
-                        <td>
-                            {{p.properties.description}}
-                        </td>
-                        <td>
-                            {{assignmentnumbers[p.id]}}
-                        </td>
-                        <td>
-                            {{violationnumbers[p.id]}}
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-sm" ng-click="viewJson(p)">View</button>
-                            <button type="button" class="btn btn-primary btn-sm" ng-click="viewAssignments(p,s.subscriptionId)">Assignments</button>
-                            <button type="button" class="btn btn-danger btn-sm" ng-show="p.properties.policyType!='BuiltIn'" ng-click="deletepd(p)">Delete</button>
-                        </td>
                     </tr>
                 </tbody>
             </table>
+
             <br />
+
+        </div>
+        <div ng-show="selectedsubId" class="form-group">
+            <span class="col-sm-12 nullable">
+                <select class="form-control col-sm-12" ng-model="roletoadd" ng-options="p.id as p.properties.roleName for p in roledefinitions[selectedsubId]" required="">
+                    <option value="">--Please select a role--</option>
+                </select>
+            </span>
+            <span class="col-sm-12 nullable">
+                <select class="form-control col-sm-12" ng-model="scopetoadd" ng-options="rg.id as rg.name for rg in resourcegroups" required="">
+                    <option value="">--all resource groups--</option>
+                </select>
+            </span>
+            <div class="col-sm-12">
+                <button type="button" class="btn btn-primary btn-sm" ng-click="AddRole(selectedsubId,roletoadd,scopetoadd)">Add Role(Client Side Only)</button>
+            </div>
+
+        </div>
+        <br />
+
+
+    </div>
+
+    <div class="col-sm-8">
+
+        <div class="col-sm-12 form-group has-feedback">
+            <h2>
+                Check if you have permissions
+            </h2>
+            <span class="nullable">
+                <select class="form-control col-sm-4" ng-model="selectedRP" ng-options="rp.name as rp.name for rp in ops " required="">
+                    <option value="">--Please select a resource provider--</option>
+                </select>
+                <select ng-show="selectedRP" class="form-control col-sm-4" ng-model="selectedResourceType" ng-options=" item.name as item.name for  item in GetResourceTypes(selectedRP)" required="">
+                    <option value="">--Please select a resource type--</option>
+                </select>
+                <select class="form-control col-sm-4" ng-model="selectedScope" ng-options="rg.id as rg.name for rg in resourcegroups" required="">
+                    <option value="">--all resource groups--</option>
+                </select>
+            </span>
+        </div>
+        <div class="col-sm-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>
+                            Display Name
+                        </th>
+                        <th>
+                            Operation Name
+                        </th>
+                        <th>
+                            Results
+                        </th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="p in GetOperations(selectedRP,selectedResourceType)">
+
+                        <td>
+                            {{p.displayName}}
+                        </td>
+                        <td>
+                            {{p.name}}
+                        </td>
+                        <td>
+                            {{IsPermittedwithDetails(selectedsubId,roleassignments[selectedsubId],p.name)}}
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
     </div>
+</div>

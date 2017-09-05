@@ -2,13 +2,15 @@
 
 /* Filters */
 
-angular.module('ms.site.filters', []).filter('togender', function () {
-    return function (idcard) {
-        if (idcard) {
-            return idcard[idcard.length - 2] % 2 == 1 ? "男" : "女";
+angular.module('ms.site.filters', []).filter('scopetolevel', function () {
+    return function (scope) {
+        if (scope.toLowerCase().indexOf('providers')>=0) {
+            return "resource"
+        } else if (scope.toLowerCase().indexOf('/resourcegroups/')>=0) {
+            return scope.substring(scope.toLowerCase().indexOf('/resourcegroups/'));
         }
         else {
-            return "未知"
+            return "subscription"
         }
     }
 }).filter("usertype", function () {

@@ -103,8 +103,9 @@ appServices.factory('Constants', ['$resource','$filter',
       clients['pd'] = $resource('/api/subscriptions/:id/providers/Microsoft.Authorization/policyDefinitions/:name?api-version=2015-10-01-preview', { id: '@id',name:'@name' }, { 'update': { method: 'PUT' }, 'query': { isArray: false } })
       clients['pa'] = $resource('/api/subscriptions/:id/providers/Microsoft.Authorization/policyAssignments/:name?api-version=2015-10-01-preview', { id: '@id', name: '@name' }, { 'update': { method: 'PUT' }, 'query': { isArray: false } })
       clients['rd'] = $resource('/api/subscriptions/:id/providers/Microsoft.Authorization/roleDefinitions/:name?api-version=2017-05-01', { id: '@id', name: '@name' }, { 'update': { method: 'PUT' }, 'query': { isArray: false } })
-      clients['ra'] = $resource('/api/subscriptions/:id/providers/Microsoft.Authorization/roleAssignments/:name?api-version=2017-05-01', { id: '@id', name: '@name' }, { 'update': { method: 'PUT' }, 'query': { isArray: false } })
-      clients['aad-membership'] = $resource('/api/graph.windows.net/me/getMemberGroups?api-version=1.6', {}, { 'query': { isArray: false, method: 'POST' } })
+      clients['ra'] = $resource('/api/subscriptions/:id/providers/Microsoft.Authorization/roleAssignments?$filter=principalId eq \':principalId\'&api-version=2017-05-01', { id: '@id', principalId: '@principalId' }, { 'update': { method: 'PUT' }, 'query': { isArray: false } })
+      clients['ops'] = $resource('/api/providers/Microsoft.Authorization/providerOperations?api-version=2015-07-01&$expand=resourceTypes', { }, { 'update': { method: 'PUT' }, 'query': { isArray: false } })
+      //clients['aad-membership'] = $resource('/api/graph.windows.net/me/getMemberGroups?api-version=1.6', {}, { 'query': { isArray: false, method: 'POST' } })
 
 
       //https://msdn.microsoft.com/en-us/library/azure/dn931934.aspx
