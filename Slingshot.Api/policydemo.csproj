@@ -254,6 +254,7 @@
     <Content Include="Pages\policylogmodal.html" />
     <Content Include="Pages\policydetailmodal.html" />
     <Content Include="Pages\policydefinitions.html" />
+    <Content Include="Pages\permissions.html" />
     <Content Include="Scripts\angular-animate.js" />
     <Content Include="Scripts\angular-animate.min.js" />
     <Content Include="Scripts\angular-aria.js" />
