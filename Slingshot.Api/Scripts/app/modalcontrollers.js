@@ -2,28 +2,51 @@
 
 /* Controllers */
 
-var appControllers = angular.module('ms.site.controllers.modal',['ms.site.services']);
+var appControllers = angular.module('ms.site.controllers.modal', ['ms.site.services']);
 
-appControllers.controller('PolicyDefinitionModal', ['$scope','$modalInstance','detail', function ($scope, $modalInstance, detail) {
+appControllers.controller('PolicyDefinitionModal', ['$scope', '$modalInstance', 'detail', function ($scope, $modalInstance, detail) {
     $scope.detail = detail
     $scope.cancel = function () {
         $modalInstance.dismiss();
     };
 }]).
-controller('PolicyAssignmentModal', ['$scope', '$modalInstance', 'detail','sub','RestService', function ($scope, $modalInstance, detail,sub,RestService) {
+controller('CustomRoleModal', ['$scope', '$modalInstance', 'detail', function ($scope, $modalInstance, detail) {
+  
+
+    $scope.ops = detail
+    $scope.policy = {}
+    $scope.policy.name = guid()
+    $scope.policy.id = guid()
+
+    $scope.GetResourceTypes = function (rp) {
+        if (rp == null) return []
+        var resourceTypes = jsonPath(detail, "$[?(@.name=='" + rp + "')].resourceTypes[*].operations[*]")
+        return resourceTypes
+    }
+    $scope.policy.properties = {
+        permissions: [{
+            actions: [],
+            notActions:[]
+        }]
+    }
+    $scope.cancel = function () {
+        $modalInstance.dismiss();
+    };
+}]).
+controller('PolicyAssignmentModal', ['$scope', '$modalInstance', 'detail', 'sub', 'RestService', function ($scope, $modalInstance, detail, sub, RestService) {
     $scope.detail = detail
     var subId = sub;
     $scope.assignments = []
     $scope.scopes = []
-    $scope.pa = {properties:{policyDefinitionId: detail.id}, name:guid() }
-    $scope.scopes.push({id:("/subscriptions/" + subId),name:("/subscriptions/" + subId)})
+    $scope.pa = { properties: { policyDefinitionId: detail.id }, name: guid() }
+    $scope.scopes.push({ id: ("/subscriptions/" + subId), name: ("/subscriptions/" + subId) })
     RestService.getclient('pa').query({ id: subId }, function (items) {
         items.value.forEach(function (a) {
             if (a.properties.policyDefinitionId == detail.id) {
                 $scope.assignments.push(a)
             }
         })
-        
+
     })
 
     RestService.getclient('rg').query({ id: subId }, function (items) {
@@ -53,9 +76,9 @@ controller('PolicyLogModalCtrl', ['$scope', '$modalInstance', 'detail', 'RestSer
         $modalInstance.dismiss();
     };
 }]).
-controller('NewPolicyModalCtrl', ['$scope', '$modalInstance', 'subs', '$filter','RestService', function ($scope, $modalInstance, subs, $filter, RestService) {
+controller('NewPolicyModalCtrl', ['$scope', '$modalInstance', 'subs', '$filter', 'RestService', function ($scope, $modalInstance, subs, $filter, RestService) {
     $scope.subs = subs
-    $scope.policy = { properties: {}}
+    $scope.policy = { properties: {} }
     $scope.ok = function () {
         var selectedsubs = $filter('filter')($scope.subs, { selected: true }, true)
         var policy = angular.copy($scope.policy)
@@ -90,12 +113,12 @@ controller('NewPolicyModalCtrl', ['$scope', '$modalInstance', 'subs', '$filter',
     $scope.items = []
     gallery.forEach(function (url) {
         $http.get(url).success(function (data, status, headers, config) {
-            
+
             var parameters = data.parameters
             var title = data.title
             var description = data.description
-          
-            $scope.items.push({ data:data, title: title, description: description, parameters: parameters })
+
+            $scope.items.push({ data: data, title: title, description: description, parameters: parameters })
         })
     })
     $scope.preview = function (policy) {
@@ -103,7 +126,7 @@ controller('NewPolicyModalCtrl', ['$scope', '$modalInstance', 'subs', '$filter',
             return ""
         }
         var data = policy.data
-        var rule = angular.toJson(data.policyRule,true)
+        var rule = angular.toJson(data.policyRule, true)
         policy.parameters.forEach(function (p) {
             if (p.type != "array") {
                 rule = rule.replaceAll("[parameters('" + p.name + "')]", p.value)
@@ -113,7 +136,7 @@ controller('NewPolicyModalCtrl', ['$scope', '$modalInstance', 'subs', '$filter',
         })
         return rule
     }
-    
+
     $scope.ok = function () {
         $modalInstance.close()
     };

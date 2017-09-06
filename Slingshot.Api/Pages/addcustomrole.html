@@ -1,0 +1,68 @@
+﻿<div>
+    <div class="modal-header">
+        <h3 class="modal-title">Add New policy</h3>
+        <label>{{detail.id}}</label>
+    </div>
+    <div class="modal-body">
+        <form name="msForm" ng-submit="submit()" class="form-horizontal" novalidate>
+  
+            <div class="form-group  has-feedback">
+                <label class="col-sm-2 control-label">Id</label>
+                <div class="col-sm-5">
+                    <input type="text"  class="form-control" ng-model="role.id" enter-focus-next/>
+                </div>
+            </div>
+            <div class="form-group  has-feedback">
+                <label class="col-sm-2 control-label">Role Name</label>
+                <div class="col-sm-5">
+                    <input type="text"  class="form-control" ng-model="role.properties.roleName" enter-focus-next/>
+                </div>
+            </div>
+            <div class="form-group  has-feedback">
+                <label class="col-sm-2 control-label">Description</label>
+                <div class="col-sm-5">
+                    <input type="text" class="form-control" ng-model="role.properties.description" enter-focus-next/>
+                </div>
+            </div>
+            <div class="form-group  has-feedback">
+                <label class="col-sm-2 control-label">Description</label>
+               <div class="col-sm-5 nullable form-group">
+                   <select class="form-control col-sm-4" ng-model="selectedRP" ng-options="rp.name as rp.name for rp in ops " required="">
+                       <option value="">--Please select a resource provider--</option>
+                   </select>
+            </div>
+            </div>
+           
+            <div class="form-group  has-feedback">
+                <label class="col-sm-2 control-label">Actions</label>
+                <div class="col-sm-5">
+                 
+                    <ui-select ng-model="selectedItem">
+                        <ui-select-match>
+                            <span ng-bind="$select.selected.name"></span>
+                        </ui-select-match>
+                        <ui-select-choices repeat="item in (GetResourceTypes(selectedRP) | filter: $select.search| limitTo:100 ) track by item.name">
+                            <span ng-bind="item.name"></span>
+                        </ui-select-choices>
+                    </ui-select>
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-primary" ng-click="ok()">Add Action</button>
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-primary" ng-click="ok()">Add Not Action</button>
+                </div>
+            </div>
+            <textarea class="form-control" rows="20" ng-model="role.properties.permissions">
+
+            </textarea>
+           
+        </form>
+
+       
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" ng-click="ok()">Submit</button>
+        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>
+</div>

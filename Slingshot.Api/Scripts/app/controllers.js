@@ -15,7 +15,6 @@ appControllers.controller('rbacCtrl', ['$scope', '$modal', 'RestService','$locat
     $scope.ops = []
     $scope.rps= []
     $scope.resourceTypes = []
-    $scope.operations = []
     RestService.getclient('ops').query(function (ops) {
         $scope.ops = ops.value
       
@@ -36,15 +35,52 @@ appControllers.controller('rbacCtrl', ['$scope', '$modal', 'RestService','$locat
     }
     $scope.GetResourceTypes = function (rp) {
         if (rp == null) return []
-        var resourceTypes = jsonPath($scope.ops, "$[?(@.name=='" + rp + "')].resourceTypes")[0]
+        var resourceTypes = jsonPath($scope.ops, "$[?(@.name=='" + rp + "')].resourceTypes[*]")
        return resourceTypes
     }
     $scope.GetOperations = function (rp, resourcetype) {
         if(rp==null || resourcetype == null) return []
-        var operations = jsonPath($scope.GetResourceTypes(rp), "$[?(@.name=='" + resourcetype + "')].operations")[0]
+        var operations = jsonPath($scope.GetResourceTypes(rp), "$[?(@.name=='" + resourcetype + "')].operations[*]")
         return operations
     }
-    $scope.IsPermittedwithDetails = function (subId, roleassignments, operationName) {
+    $scope.AddCustomRole = function (selectedsubId) {
+        var modalInstance = $modal.open({
+            templateUrl: "/pages/addcustomrole.html",
+            size: 'lg',
+            controller: "CustomRoleModal",
+            resolve: {
+                detail: function () {
+                    return $scope.ops;
+                }
+            }
+        });
+        modalInstance.result.then(function () {
+
+        })
+    }
+    $scope.IsPermittedwithDetails = function (subId, allroleassignments, operationName) {
+        if (allroleassignments== null || allroleassignments.length ==0) {
+            return false
+        }
+        var roleassignments = []
+        if ($scope.selectedScope == null) {
+            //check permissions only on subscription level
+            roleassignments = jsonPath(allroleassignments, "$[?(!/resourcegroups/i.test(@.properties.scope))]")
+            if (roleassignments == false) {
+                roleassignments = []
+            }
+        } else {
+            roleassignments = jsonPath(allroleassignments, "$[?(!/resourcegroups/i.test(@.properties.scope))]")
+            if (roleassignments == false) {
+                roleassignments = []
+            }
+            var rgassignments = jsonPath(allroleassignments, "$[?(@.properties.scope =='" + $scope.selectedScope + "')]")
+            if (rgassignments == false) {
+                rgassignments = []
+            }
+            roleassignments = roleassignments.concat(rgassignments)
+        }
+
         operationName = operationName.toLowerCase()
         if(subId == null || roleassignments == null || operationName == null) return false
         var matchassignment = false
@@ -89,7 +125,7 @@ appControllers.controller('rbacCtrl', ['$scope', '$modal', 'RestService','$locat
     }
     $scope.ViewPermissions = function (subscriptionId, roleDefinitionId) {
         var rds = $scope.roledefinitions[subscriptionId]
-        var permissions = jsonPath(rds, "$.[?(@.id=='" + roleDefinitionId + "')].properties.permissions")[0]
+        var permissions = jsonPath(rds, "$.[?(@.id=='" + roleDefinitionId + "')].properties.permissions[*]")
         var modalInstance = $modal.open({
             templateUrl: "/pages/permissions.html",
             size: 'lg',
@@ -296,6 +332,7 @@ function Initialize($scope, $modal, RestService, $location, $filter) {
         $scope.memberships = []
         $scope.violationnumbers = []
         $scope.events = []
+        $scope.resourcegroups = []
         $scope.loadingpolicy = true
         $scope.loadinglogs = true
         $scope.loadingassignments = true
@@ -347,7 +384,7 @@ function Initialize($scope, $modal, RestService, $location, $filter) {
                     }) 
 
                     RestService.getclient('rg').query({ id: sub.subscriptionId },function(items) {
-                        $scope.resourcegroups = items.value
+                        $scope.resourcegroups[sub.subscriptionId] = items.value
                     })
                     // alert(JSON.stringify(user))
                 })

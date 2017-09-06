@@ -4,7 +4,7 @@
 
 
 var appmodule = angular.module('ms.site', ['ngCookies','ngRoute', 'ms.site.controllers',
-  'ms.site.services', 'ms.site.directives', 'ms.site.filters', 'ui.bootstrap', 
+  'ms.site.services', 'ms.site.directives', 'ms.site.filters', 'ui.bootstrap', "ui.select", 'ngSanitize'
  // 'ms.site.filters'
 ])
         .config(['$routeProvider',

@@ -1,11 +1,9 @@
 ﻿<div class="col-sm-12 col-sm-offset-0 col-md-40 col-md-offset-0 main">
 
     <p ng-show="loadingrbac" class="bg-info">Loading ....</p>
-    <div class="col-sm-offset-10">
-        <button type="button" class="btn btn-primary btn-sm" ng-click="addPolicy(p)">Add Custom Role</button>
-    </div>
+    
 
-    <div class="col-sm-4">
+    <nav class="col-sm-4 sidebar">
 
         <h2>
             Get Role Assignments
@@ -58,45 +56,57 @@
             <br />
 
         </div>
-        <div ng-show="selectedsubId" class="form-group">
-            <span class="col-sm-12 nullable">
+        <div ng-show="selectedsubId">
+            <h3>
+                Attach another role( no change will be made)
+            </h3>
+
+            <div class="col-sm-12 nullable form-group">
                 <select class="form-control col-sm-12" ng-model="roletoadd" ng-options="p.id as p.properties.roleName for p in roledefinitions[selectedsubId]" required="">
                     <option value="">--Please select a role--</option>
                 </select>
-            </span>
-            <span class="col-sm-12 nullable">
-                <select class="form-control col-sm-12" ng-model="scopetoadd" ng-options="rg.id as rg.name for rg in resourcegroups" required="">
+            </div>
+            <div class="col-sm-12 nullable form-group">
+                <select class="form-control col-sm-12" ng-model="scopetoadd" ng-options="rg.id as rg.name for rg in resourcegroups[selectedsubId]">
                     <option value="">--all resource groups--</option>
                 </select>
-            </span>
-            <div class="col-sm-12">
-                <button type="button" class="btn btn-primary btn-sm" ng-click="AddRole(selectedsubId,roletoadd,scopetoadd)">Add Role(Client Side Only)</button>
             </div>
+            <div class="col-sm-12">
+                <button type="button" ng-disabled="!roletoadd" class="btn btn-primary btn-sm" ng-click="AddRole(selectedsubId,roletoadd,scopetoadd)">Attach Role</button>
+                <button type="button" class="btn btn-primary btn-sm" ng-click="AddCustomRole(selectedsubId)">Add a Custom Role</button>
+            </div>
+        
 
         </div>
         <br />
 
 
-    </div>
+    </nav>
 
-    <div class="col-sm-8">
+    <main class="col-sm-8 col-sm-offset-4" role="main">
 
-        <div class="col-sm-12 form-group has-feedback">
+        <div class="col-sm-12  has-feedback">
             <h2>
                 Check if you have permissions
             </h2>
-            <span class="nullable">
+            <div class="col-sm-4 nullable form-group">
                 <select class="form-control col-sm-4" ng-model="selectedRP" ng-options="rp.name as rp.name for rp in ops " required="">
                     <option value="">--Please select a resource provider--</option>
                 </select>
-                <select ng-show="selectedRP" class="form-control col-sm-4" ng-model="selectedResourceType" ng-options=" item.name as item.name for  item in GetResourceTypes(selectedRP)" required="">
+                </div>
+            <div class="col-sm-4 nullable form-group">
+                <select ng-disabled="!selectedRP" class="form-control col-sm-4" ng-model="selectedResourceType" ng-options="item.name as item.name for  item in GetResourceTypes(selectedRP)" required="">
                     <option value="">--Please select a resource type--</option>
                 </select>
-                <select class="form-control col-sm-4" ng-model="selectedScope" ng-options="rg.id as rg.name for rg in resourcegroups" required="">
+
+            </div>
+            <div class="col-sm-4 nullable form-group">
+                <select ng-disabled="!selectedsubId" class="form-control col-sm-4" ng-model="selectedScope" ng-options="rg.id as rg.name for rg in resourcegroups[selectedsubId]">
                     <option value="">--all resource groups--</option>
                 </select>
-            </span>
+            </div>
         </div>
+      
         <div class="col-sm-12">
             <table class="table table-striped">
                 <thead>
@@ -129,7 +139,10 @@
                     </tr>
                 </tbody>
             </table>
+            
+                <p ng-show="!selectedsubId || !selectedRP || !selectedResourceType " class="bg-info">Select a Subscription and a resource type to begin with</p>
+            
         </div>
 
-    </div>
+    </main>
 </div>
