@@ -12,7 +12,7 @@
         <div class="form-group  has-feedback">
 
             <span class="nullable col-sm-12">
-                <select class="form-control col-sm-12" ng-model="selectedsubId" ng-options="sub.subscriptionId as sub.displayName for sub in subs" required="">
+                <select ng-disabled="!subs || subs.length==0" class="form-control col-sm-12" ng-model="selectedsubId" ng-options="sub.subscriptionId as sub.displayName for sub in subs" required="">
                     <option value="">--Please Select a Subscription--</option>
                 </select>
             </span>
@@ -90,7 +90,7 @@
                 Check if you have permissions
             </h2>
             <div class="col-sm-4 nullable form-group">
-                <select class="form-control col-sm-4" ng-model="selectedRP" ng-options="rp.name as rp.name for rp in ops " required="">
+                <select ng-disabled="!ops || ops.length==0" class="form-control col-sm-4" ng-model="selectedRP" ng-options="rp.name as rp.name for rp in ops  | orderBy:['name'] " required="">
                     <option value="">--Please select a resource provider--</option>
                 </select>
                 </div>
@@ -132,7 +132,10 @@
                         <td>
                             {{p.name}}
                         </td>
-                        <td>
+                        <td ng-if="IsPermittedwithDetails(selectedsubId,roleassignments[selectedsubId],p.name)" class="alert-success">
+                            {{IsPermittedwithDetails(selectedsubId,roleassignments[selectedsubId],p.name)}}
+                        </td>
+                        <td ng-if="!IsPermittedwithDetails(selectedsubId,roleassignments[selectedsubId],p.name)" class="alert-danger">
                             {{IsPermittedwithDetails(selectedsubId,roleassignments[selectedsubId],p.name)}}
                         </td>
 

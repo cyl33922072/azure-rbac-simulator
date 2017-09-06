@@ -1,17 +1,12 @@
 ﻿<div>
     <div class="modal-header">
-        <h3 class="modal-title">Add New policy</h3>
+        <h3 class="modal-title">Add Custom Role (no change will be made)</h3>
         <label>{{detail.id}}</label>
     </div>
     <div class="modal-body">
         <form name="msForm" ng-submit="submit()" class="form-horizontal" novalidate>
   
-            <div class="form-group  has-feedback">
-                <label class="col-sm-2 control-label">Id</label>
-                <div class="col-sm-5">
-                    <input type="text"  class="form-control" ng-model="role.id" enter-focus-next/>
-                </div>
-            </div>
+
             <div class="form-group  has-feedback">
                 <label class="col-sm-2 control-label">Role Name</label>
                 <div class="col-sm-5">
@@ -26,35 +21,42 @@
             </div>
             <div class="form-group  has-feedback">
                <label class="col-sm-2 control-label">Resource Provider</label>
-               <div class="col-sm-5 nullable form-group">
-                   <select class="form-control col-sm-4" ng-model="selectedRP" ng-options="rp.name as rp.name for rp in ops " required="">
+               <div class="col-sm-5">
+                   <select class="form-control col-sm-4" ng-model="selectedRP" ng-options="rp.name as rp.name for rp in ops | orderBy:['name'] " ng-change="item.selected.name=''">
                        <option value="">--Please select a resource provider--</option>
                    </select>
             </div>
             </div>
            
-            <div class="form-group  has-feedback">
+            <div  class="form-group  has-feedback">
                 <label class="col-sm-2 control-label">Actions</label>
-                <div class="col-sm-5">
-                    <h2>{{selected}}</h2>
-                    <ui-select ng-model="selected">
+                <div ng-show="selectedRP" class="col-sm-5">
+                   
+                    <ui-select ng-model="item.selected">
                         <ui-select-match>
                             <span ng-bind="$select.selected.name"></span>
                         </ui-select-match>
-                        <ui-select-choices repeat="item in (GetResourceTypes(selectedRP) | filter: $select.search| limitTo:100 )">
+                        <ui-select-choices group-by="GetType" repeat="item in (GetResourceTypes(selectedRP) | filter: $select.search| limitTo:100 )">
                             <span ng-bind="item.name"></span>
                         </ui-select-choices>
                     </ui-select>
                 </div>
-                <div class="col-sm-2">
-                    <button class="btn btn-primary" ng-click="AddAction(selectedItem)">Add Action</button>
+                <div ng-show="!selectedRP" class="col-sm-5">
+                    <input type="text" class="form-control" ng-model="item.selected.name" enter-focus-next />
                 </div>
                 <div class="col-sm-2">
-                    <button class="btn btn-primary" ng-click="AddNotAction(selectedItem)">Add Not Action</button>
+                    <button ng-disabled="!item.selected.name || item.selected.name==''" class="btn btn-primary" ng-click="AddAction(item.selected.name)">Add Action</button>
+                </div>
+                <div class="col-sm-2">
+                    <button ng-disabled="!item.selected.name || item.selected.name==''" class="btn btn-primary" ng-click="AddNotAction(item.selected.name)">Add Not Action</button>
                 </div>
             </div>
-            <textarea class="form-control" rows="20" >{{role.properties.permissions | json}}
+            <div class="form-group  has-feedback">
 
+            </div>
+            <textarea readonly class="form-control" rows="20" >
+  {{role | json}}
+               
             </textarea>
            
         </form>
@@ -63,6 +65,7 @@
     </div>
     <div class="modal-footer">
         <button class="btn btn-primary" ng-click="ok()">Submit</button>
+        <button class="btn btn-danger" ng-click="reset()">Reset</button>
         <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>
 </div>

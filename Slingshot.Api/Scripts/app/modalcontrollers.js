@@ -16,26 +16,44 @@ controller('CustomRoleModal', ['$scope', '$modalInstance', 'detail', function ($
     $scope.ops = detail
     $scope.role = {}
     $scope.role.name = guid()
-    $scope.role.id =  guid()
-
+    $scope.item = {}
     $scope.AddAction = function (action) {
         $scope.role.properties.permissions[0].actions.push(action)
+        $scope.item.selected.name = ""
     }
-
+    $scope.AddNotAction = function (action) {
+        $scope.role.properties.permissions[0].notActions.push(action)
+        $scope.item.selected.name = ""
+    }
+    $scope.GetType = function (item) {
+        var stripRP = item.name.substring($scope.selectedRP.length + 1)
+        return stripRP.substring(0, stripRP.indexOf("/"))
+    }
     $scope.GetResourceTypes = function (rp) {
         if (rp == null) return []
         var resourceTypes = jsonPath(detail, "$[?(@.name=='" + rp + "')].resourceTypes[*].operations[*]")
+        if (resourceTypes == false) return []
         return resourceTypes
     }
-    $scope.role.properties = {
-        permissions: [{
-            actions: [],
-            notActions:[]
-        }]
-    }
+    $scope.reset = function () {
+        $scope.role.properties = {
+            permissions: [{
+                actions: [],
+                notActions: []
+            }],
+            description: "",
+            roleName: ""
+        }
+    };
+    $scope.reset()
     $scope.cancel = function () {
         $modalInstance.dismiss();
     };
+    $scope.ok = function () {
+        
+        $modalInstance.close($scope.role);
+    };
+    
 }]).
 controller('PolicyAssignmentModal', ['$scope', '$modalInstance', 'detail', 'sub', 'RestService', function ($scope, $modalInstance, detail, sub, RestService) {
     $scope.detail = detail

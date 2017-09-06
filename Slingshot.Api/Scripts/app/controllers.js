@@ -36,6 +36,7 @@ appControllers.controller('rbacCtrl', ['$scope', '$modal', 'RestService','$locat
     $scope.GetResourceTypes = function (rp) {
         if (rp == null) return []
         var resourceTypes = jsonPath($scope.ops, "$[?(@.name=='" + rp + "')].resourceTypes[*]")
+        if (resourceTypes == false) return []
        return resourceTypes
     }
     $scope.GetOperations = function (rp, resourcetype) {
@@ -54,9 +55,11 @@ appControllers.controller('rbacCtrl', ['$scope', '$modal', 'RestService','$locat
                 }
             }
         });
-        modalInstance.result.then(function () {
-
-        })
+        modalInstance.result.then(function (role) {
+            role.id="/subscriptions/"+$scope.selectedsubId + "/providers/Microsoft.Authorization/roleDefinitions/"+role.name
+            $scope.roledefinitions[$scope.selectedsubId].push(role)
+            $scope.roletoadd=role.id
+        }, function () { })
     }
     $scope.IsPermittedwithDetails = function (subId, allroleassignments, operationName) {
         if (allroleassignments== null || allroleassignments.length ==0) {
