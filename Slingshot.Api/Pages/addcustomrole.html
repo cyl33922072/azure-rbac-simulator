@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div class="form-group  has-feedback">
-                <label class="col-sm-2 control-label">Description</label>
+               <label class="col-sm-2 control-label">Resource Provider</label>
                <div class="col-sm-5 nullable form-group">
                    <select class="form-control col-sm-4" ng-model="selectedRP" ng-options="rp.name as rp.name for rp in ops " required="">
                        <option value="">--Please select a resource provider--</option>
@@ -36,24 +36,24 @@
             <div class="form-group  has-feedback">
                 <label class="col-sm-2 control-label">Actions</label>
                 <div class="col-sm-5">
-                 
-                    <ui-select ng-model="selectedItem">
+                    <h2>{{selected}}</h2>
+                    <ui-select ng-model="selected">
                         <ui-select-match>
                             <span ng-bind="$select.selected.name"></span>
                         </ui-select-match>
-                        <ui-select-choices repeat="item in (GetResourceTypes(selectedRP) | filter: $select.search| limitTo:100 ) track by item.name">
+                        <ui-select-choices repeat="item in (GetResourceTypes(selectedRP) | filter: $select.search| limitTo:100 )">
                             <span ng-bind="item.name"></span>
                         </ui-select-choices>
                     </ui-select>
                 </div>
                 <div class="col-sm-2">
-                    <button class="btn btn-primary" ng-click="ok()">Add Action</button>
+                    <button class="btn btn-primary" ng-click="AddAction(selectedItem)">Add Action</button>
                 </div>
                 <div class="col-sm-2">
-                    <button class="btn btn-primary" ng-click="ok()">Add Not Action</button>
+                    <button class="btn btn-primary" ng-click="AddNotAction(selectedItem)">Add Not Action</button>
                 </div>
             </div>
-            <textarea class="form-control" rows="20" ng-model="role.properties.permissions">
+            <textarea class="form-control" rows="20" >{{role.properties.permissions | json}}
 
             </textarea>
            

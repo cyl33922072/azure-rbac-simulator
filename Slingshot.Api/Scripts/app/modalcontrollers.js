@@ -14,16 +14,20 @@ controller('CustomRoleModal', ['$scope', '$modalInstance', 'detail', function ($
   
 
     $scope.ops = detail
-    $scope.policy = {}
-    $scope.policy.name = guid()
-    $scope.policy.id = guid()
+    $scope.role = {}
+    $scope.role.name = guid()
+    $scope.role.id =  guid()
+
+    $scope.AddAction = function (action) {
+        $scope.role.properties.permissions[0].actions.push(action)
+    }
 
     $scope.GetResourceTypes = function (rp) {
         if (rp == null) return []
         var resourceTypes = jsonPath(detail, "$[?(@.name=='" + rp + "')].resourceTypes[*].operations[*]")
         return resourceTypes
     }
-    $scope.policy.properties = {
+    $scope.role.properties = {
         permissions: [{
             actions: [],
             notActions:[]

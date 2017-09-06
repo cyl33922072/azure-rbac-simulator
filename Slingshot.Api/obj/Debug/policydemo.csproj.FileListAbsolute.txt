@@ -201,3 +201,4 @@ C:\Users\mikech\Documents\GitHub\policydemo3\Slingshot.Api\obj\Debug\policydemo.
 C:\Users\mikech\Documents\GitHub\policydemo3\Slingshot.Api\obj\Debug\policydemo.csprojResolveAssemblyReference.cache
 C:\Users\mikech\Documents\GitHub\policydemo3\Slingshot.Api\obj\Debug\Slingshot.Api.dll
 C:\Users\mikech\Documents\GitHub\policydemo3\Slingshot.Api\obj\Debug\Slingshot.Api.pdb
+C:\Users\mikech\Documents\GitHub\policydemo2\Slingshot.Api\obj\Debug\policydemo.csproj.CoreCompileInputs.cache
